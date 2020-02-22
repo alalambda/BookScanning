@@ -2,11 +2,22 @@
 
 namespace BookScanning
 {
-    class Program
+    public class Program
     {
+
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var files = new string[]
+            {
+                @"Input/a_example.txt"
+            };
+
+            var fileReader = new FileReader();
+
+            foreach (var fileName in files)
+            {
+                fileReader.Process(fileName);
+            }
         }
     }
 }
