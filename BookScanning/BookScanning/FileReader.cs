@@ -6,14 +6,15 @@ namespace BookScanning
 {
     public class FileReader
     {
+
+        public FileWriter _FileWriter = new FileWriter();
+
         public List<Library> Libraries = null;
+        public Dictionary<int, int> BookToRatingGlobal = null;
 
         public int numberOfBooks = 0;
         public int numberOfLibraries = 0;
         public int numberOfDays = 0;
-
-        public int[] ratingsArray = null;
-        public int[] distinctBookIds = null;
 
         public void Process(string fileName)
         {
@@ -22,9 +23,9 @@ namespace BookScanning
             var allBookIds = new List<int>();
 
             Libraries = new List<Library>(numberOfLibraries);
-            ratingsArray = new int[numberOfBooks];
+            int[] ratingsArray = new int[numberOfBooks];
 
-            var lines = File.ReadAllLines(fileName);
+            var lines = File.ReadAllLines(@"Input/" + fileName);
 
             for (var i = 0; i < lines.Length; i++)
             {
@@ -74,12 +75,12 @@ namespace BookScanning
                 {
                     var library = new Library()
                     {
+                        Id = i - 2, // we are using i, but first two lines are reserved for common data; libraries in file start from i = 2
                         BooksInLibrary = booksInLibrary,
                         DaysToSignoff = daysToSignoff,
                         BooksCanSendPerDay = booksCanSendPerDay,
-                        BookIds = books.ToArray(),
-                        BookRatings = GetOrderOfBooksInLibraryByRating(books.ToArray()),
-                        Efficiency = CalculateLibraryEfficiency(daysToSignoff, booksCanSendPerDay, booksInLibrary)
+                        Efficiency = CalculateLibraryEfficiency(daysToSignoff, booksCanSendPerDay, booksInLibrary),
+                        BooksSortedByRating = books.OrderByDescending(x => x).ToArray()
                     };
 
                     Libraries.Add(library);
@@ -88,13 +89,28 @@ namespace BookScanning
                 allBookIds.Concat(books);
             }
 
-            distinctBookIds = allBookIds.Distinct().ToArray();
+            var distinctBookIdsGlobal = allBookIds.Distinct().ToArray();
+
+            BookToRatingGlobal = MakeDictionary(distinctBookIdsGlobal, ratingsArray);
+
+            _FileWriter.SignoffAndShipBooks(Libraries, BookToRatingGlobal, numberOfDays, fileName);
+        }
+
+        public Dictionary<int, int> MakeDictionary(int[] distinctBookIds, int[] ratingsArray)
+        {
+            var bookToRating = new Dictionary<int, int>(numberOfBooks);
+            for (int i = 0; i < numberOfBooks; i++)
+            {
+                bookToRating.Add(distinctBookIds[i], ratingsArray[i]);
+            }
+
+            return bookToRating;
         }
 
         public void Init(string fileName)
         {
             // very first line of file contains total number of books; libraries; and days to process
-            var firstLine = File.ReadLines(fileName).First();
+            var firstLine = File.ReadLines(@"Input/" + fileName).First();
 
             string[] values = firstLine.Split(' ');
 
@@ -106,11 +122,6 @@ namespace BookScanning
         public double CalculateLibraryEfficiency(int signoffDays, int booksPerDay, int booksInLibrary)
         {
             return signoffDays + (booksInLibrary / booksPerDay);
-        }
-
-        public int[] GetOrderOfBooksInLibraryByRating(int[] books)
-        {
-            return books.OrderByDescending(x => x).ToArray();
         }
     }
 }
