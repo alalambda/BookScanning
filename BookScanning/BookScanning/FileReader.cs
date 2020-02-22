@@ -98,11 +98,16 @@ namespace BookScanning
 
             var distinctBookIdsGlobal = allBookIds.Distinct().ToArray();
 
-            BookToRatingGlobal = MapBooksToRatings(distinctBookIdsGlobal, ratingsArray);
+            BookToRatingGlobal = MapBooksToRatings(distinctBookIdsGlobal, ratingsArray); 
 
-            SortBooksByRatingPerLibrary();
+            if (!AreRatingsSame(ratingsArray))
+            {
+                BookToRatingGlobal = BookToRatingGlobal.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
 
-            _FileWriter.SignoffAndShipBooks(Libraries, BookToRatingGlobal, numberOfDays, fileName);
+                SortBooksByRatingPerLibrary();
+            }
+
+            _FileWriter.SignoffAndShipBooks(Libraries, BookToRatingGlobal, numberOfDays, numberOfBooks, fileName);
         }
 
         public Dictionary<int, int> MapBooksToRatings(int[] distinctBookIds, int[] ratingsArray)
@@ -115,7 +120,7 @@ namespace BookScanning
                 bookToRating.Add(d, r);
             }
 
-            return bookToRating.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
+            return bookToRating;
         }
 
         public void Init(string fileName)
@@ -150,6 +155,11 @@ namespace BookScanning
                 library.booksSortedByRatingDictionary = 
                     library.booksSortedByRatingDictionary.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
             }
+        }
+
+        public bool AreRatingsSame(int[] ratingsArray)
+        {
+            return ratingsArray.Distinct().Count() == 1;
         }
     }
 }
