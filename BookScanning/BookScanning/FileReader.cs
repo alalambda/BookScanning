@@ -98,16 +98,17 @@ namespace BookScanning
 
             var distinctBookIdsGlobal = allBookIds.Distinct().ToArray();
 
-            BookToRatingGlobal = MapBooksToRatings(distinctBookIdsGlobal, ratingsArray); 
+            BookToRatingGlobal = MapBooksToRatings(distinctBookIdsGlobal, ratingsArray);
 
-            if (!AreRatingsSame(ratingsArray))
+            var areRatingsSame = AreRatingsSame(ratingsArray);
+            if (!areRatingsSame)
             {
                 BookToRatingGlobal = BookToRatingGlobal.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
 
                 SortBooksByRatingPerLibrary();
             }
 
-            _FileWriter.SignoffAndShipBooks(Libraries, BookToRatingGlobal, numberOfDays, numberOfBooks, fileName);
+            _FileWriter.SignoffAndShipBooks(Libraries, BookToRatingGlobal, numberOfDays, fileName, areRatingsSame);
         }
 
         public Dictionary<int, int> MapBooksToRatings(int[] distinctBookIds, int[] ratingsArray)

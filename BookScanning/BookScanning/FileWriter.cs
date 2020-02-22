@@ -14,19 +14,72 @@ namespace BookScanning
 
         public List<Library> sortedLibraries = null;
 
-        public void OrderLibraries(List<Library> libraries)
+        public void OrderLibraries(List<Library> libraries, bool areRatingsSame, int numberOfDaysTotal)
         {
             sortedLibraries = libraries.OrderByDescending(x => x.Efficiency).ToList();
+
+            var libraryRatings = new int[sortedLibraries.Count];
+
+            if (!areRatingsSame)
+            {
+                for (int i = 0; i < sortedLibraries.Count; i++)
+                {
+                    var library = libraries[i];
+                    if (library.booksSortedByRatingDictionary != null)
+                    {
+                        var libraryRating = 0;
+                        if (library.BooksInLibrary < library.BooksCanSendPerDay)
+                        {
+                            var booksLibraryCanShip = library.BooksInLibrary;
+                            libraryRating = library.booksSortedByRatingDictionary.Sum(x => x.Value);
+                        }
+                        else
+                        {
+                            var booksLibraryCanShip = (numberOfDaysTotal - library.DaysToSignoff) / library.BooksCanSendPerDay;
+
+                            foreach (var rating in library.booksSortedByRatingDictionary.Values)
+                            {
+                                if (booksLibraryCanShip == 0)
+                                {
+                                    break;
+                                }
+
+                                libraryRating += rating;
+                                --booksLibraryCanShip;
+                            }
+                        }
+                        libraryRatings[i] = libraryRating;
+                    }
+                }
+
+                for (var i = 0; i < libraryRatings.Length - 1; i++)
+                {
+                    for (var k = 1; k < libraryRatings.Length; k++)
+                    {
+                        if (libraryRatings[i] < libraryRatings[k])
+                        {
+                            var tempRating = libraryRatings[i];
+                            var tempLibrary = sortedLibraries[i];
+
+                            libraryRatings[i] = libraryRatings[k];
+                            sortedLibraries[i] = sortedLibraries[k];
+
+                            libraryRatings[k] = tempRating;
+                            sortedLibraries[k] = tempLibrary;
+                        }
+                    }
+                }
+            }
         }
 
-        public void SignoffAndShipBooks(List<Library> libraries, Dictionary<int, int> BookToRatingGlobal, int numberOfDaysTotal, int initialBooksCount, string fileName)
+        public void SignoffAndShipBooks(List<Library> libraries, Dictionary<int, int> BookToRatingGlobal, int numberOfDaysTotal, string fileName, bool areRatingsSame)
         {
             if (File.Exists(path + fileName))
             {
                 File.Delete(path + fileName);
             }
 
-            OrderLibraries(libraries);
+            OrderLibraries(libraries, areRatingsSame, numberOfDaysTotal);
 
             var libraryAndBooksString = new StringBuilder();
 
@@ -103,6 +156,11 @@ namespace BookScanning
                             continue;
                         }
                     }
+                }
+
+                if (booksProcessed == 0)
+                {
+                    break;
                 }
 
                 var arrayOfBookIds = new int[library.Books.Length];
