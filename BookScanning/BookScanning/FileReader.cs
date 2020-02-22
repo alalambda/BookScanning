@@ -107,10 +107,12 @@ namespace BookScanning
 
         public Dictionary<int, int> MapBooksToRatings(int[] distinctBookIds, int[] ratingsArray)
         {
-            var bookToRating = new Dictionary<int, int>(numberOfBooks);
-            for (int i = 0; i < numberOfBooks; i++)
+            var bookToRating = new Dictionary<int, int>(distinctBookIds.Length);
+            for (int i = 0; i < distinctBookIds.Length; i++)
             {
-                bookToRating.Add(distinctBookIds[i], ratingsArray[i]);
+                int d = distinctBookIds[i];
+                int r = ratingsArray[i];
+                bookToRating.Add(d, r);
             }
 
             return bookToRating.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
