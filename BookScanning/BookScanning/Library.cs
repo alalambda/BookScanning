@@ -11,6 +11,7 @@ namespace BookScanning
         public int DaysToSignoff { get; set; }
         public int BooksCanSendPerDay { get; set; }
         public double Efficiency { get; set; }
-        public int[] BooksSortedByRating { get; set; }
+        public int[] Books { get; set; }
+        public Dictionary<int, int> booksSortedByRatingDictionary { get; set; }
     }
 }

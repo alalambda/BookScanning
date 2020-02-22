@@ -7,6 +7,10 @@ namespace BookScanning
 {
     public class FileWriter
     {
+        public string path = @"C:\Users\annus\source\repos\BookScanning\BookScanning\BookScanning\Output\";
+
+        private static readonly char[] TrimNewLineChars = Environment.NewLine.ToCharArray();
+
         public StringBuilder output = new StringBuilder();
         public List<Library> sortedLibraries = null;
 
@@ -36,7 +40,7 @@ namespace BookScanning
 
                 var booksProcessed = 0;
                 var daysPassed = library.DaysToSignoff;
-                foreach (var bookId in library.BooksSortedByRating)
+                foreach (var bookId in library.booksSortedByRatingDictionary.Keys.ToArray())
                 {
                     if (daysPassed == numberOfDaysTotal)
                     {
@@ -56,7 +60,7 @@ namespace BookScanning
                 }
 
                 var trimmedBookArray = new int[booksProcessed];
-                Array.Copy(library.BooksSortedByRating, trimmedBookArray, booksProcessed);
+                Array.Copy(library.booksSortedByRatingDictionary.Keys.ToArray(), trimmedBookArray, booksProcessed);
 
                 libraryAndBooksString.Append(library.Id).Append(" ").Append(booksProcessed).AppendLine();
                 libraryAndBooksString.Append(string.Join(" ", trimmedBookArray)).AppendLine();
@@ -69,9 +73,9 @@ namespace BookScanning
             libraryAndBooksString.Insert(0, librariesProcessed)
                 .Insert(librariesProcessed.ToString().Length, Environment.NewLine);
 
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"Output/" + fileName))
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(path + fileName))
             {
-                file.WriteLine(libraryAndBooksString.ToString());
+                file.WriteLine(libraryAndBooksString.ToString().TrimEnd(TrimNewLineChars));
             }
         }
     }

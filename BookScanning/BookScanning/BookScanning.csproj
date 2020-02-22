@@ -9,4 +9,10 @@
     <Folder Include="Output\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Input\a_example.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

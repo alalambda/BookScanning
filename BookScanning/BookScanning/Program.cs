@@ -9,7 +9,8 @@ namespace BookScanning
         {
             var files = new string[]
             {
-                "a_example.txt"
+                "a_example.txt",
+                "b_read_on.txt"
             };
 
             var fileReader = new FileReader();
