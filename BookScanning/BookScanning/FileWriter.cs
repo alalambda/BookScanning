@@ -57,7 +57,15 @@ namespace BookScanning
                         if (BookToRatingGlobal.ContainsKey(bookId))
                         {
                             BookToRatingGlobal.Remove(bookId);
-                            booksProcessed += library.BooksCanSendPerDay;
+                            if (library.BooksCanSendPerDay > library.BooksInLibrary)
+                            {
+                                booksProcessed += library.BooksInLibrary;
+                                break;
+                            }
+                            else
+                            {
+                                booksProcessed += library.BooksCanSendPerDay;
+                            }
                             ++daysPassed;
                         }
                         else
