@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -7,6 +6,8 @@ namespace BookScanning
 {
     public class FileReader
     {
+        public List<Library> Libraries = null;
+
         public int numberOfBooks = 0;
         public int numberOfLibraries = 0;
         public int numberOfDays = 0;
@@ -18,13 +19,19 @@ namespace BookScanning
         {
             Init(fileName);
 
-            var bookIds = new List<int>();
+            var allBookIds = new List<int>();
+
+            Libraries = new List<Library>(numberOfLibraries);
             ratingsArray = new int[numberOfBooks];
 
             var lines = File.ReadAllLines(fileName);
 
             for (var i = 0; i < lines.Length; i++)
             {
+                var booksInLibrary = 0;
+                var daysToSignoff = 0;
+                var booksCanSendPerDay = 0;
+
                 if (i < 1) continue;
 
                 var line = lines[i];
@@ -32,11 +39,11 @@ namespace BookScanning
                 // very second line of the file contains ratings of all books 
                 if (i == 1)
                 {
-                    var values = line.Split(' ');
+                    var valuesFromLine = line.Split(' ');
 
-                    for (int j = 0; j < values.Length; j++)
+                    for (int j = 0; j < valuesFromLine.Length; j++)
                     {
-                        var rating = int.Parse(values[j]);
+                        var rating = int.Parse(valuesFromLine[j]);
                         ratingsArray[j] = rating;
                     }
 
@@ -46,23 +53,42 @@ namespace BookScanning
                 // in i is even number, then it contains number of books in library; number of days to signup; and number of books library can send per day
                 if (i % 2 == 0)
                 {
-                   
+                    var libraryStats = line.Split(' ');
+                    booksInLibrary = int.Parse(libraryStats[0]);
+                    daysToSignoff = int.Parse(libraryStats[1]);
+                    booksCanSendPerDay = int.Parse(libraryStats[2]);
+
+                    continue;
                 }
+
                 // if i is odd number, then it contains ID's of the books in library
-                else
+                var books = new List<int>();
+                var values = line.Split(' ');
+                foreach (var value in values)
                 {
-                    int bookCount = 0;
-                    string[] values = line.Split(' ');
-                    foreach (var value in values)
-                    {
-                        var bookId = int.Parse(value);
-                        bookIds.Add(bookId);
-                        ++bookCount;
-                    }
+                    var bookId = int.Parse(value);
+                    books.Add(bookId);
                 }
+
+                if (i % 2 != 0)
+                {
+                    var library = new Library()
+                    {
+                        BooksInLibrary = booksInLibrary,
+                        DaysToSignoff = daysToSignoff,
+                        BooksCanSendPerDay = booksCanSendPerDay,
+                        BookIds = books.ToArray(),
+                        BookRatings = GetOrderOfBooksInLibraryByRating(books.ToArray()),
+                        Efficiency = CalculateLibraryEfficiency(daysToSignoff, booksCanSendPerDay, booksInLibrary)
+                    };
+
+                    Libraries.Add(library);
+                }
+
+                allBookIds.Concat(books);
             }
 
-            distinctBookIds = bookIds.Distinct().ToArray();
+            distinctBookIds = allBookIds.Distinct().ToArray();
         }
 
         public void Init(string fileName)
@@ -77,36 +103,14 @@ namespace BookScanning
             numberOfDays = int.Parse(values[2]);
         }
 
-        public double CalculateLibraryEfficiency(int libraryId, int signoff, int booksPerDay, int libraryRating)
+        public double CalculateLibraryEfficiency(int signoffDays, int booksPerDay, int booksInLibrary)
         {
-
+            return signoffDays + (booksInLibrary / booksPerDay);
         }
 
-        public int CalculateLibraryRating(int[] books, int[] ratings)
-        {
-            var libraryRating = 0;
-
-        }
-
-        public int[] OrderBooksInLibraryByRating(int[] books)
+        public int[] GetOrderOfBooksInLibraryByRating(int[] books)
         {
             return books.OrderByDescending(x => x).ToArray();
-        }
-
-        public int[] CalculateOrderOfLibraries(int[] signoffs, int[] booksPerDay, int[] books)
-        {
-            // pair of library ID and it's time to deliver
-            var order = new Dictionary<int, int>();
-
-            for (int i = 0; i < numberOfLibraries; i++)
-            {
-                var timeToDeliver = signoffs[i] + 1 / booksPerDay[i] * books[i];
-                order.Add(i, timeToDeliver); 
-            }
-
-            var sorted = from entry in order orderby entry.Value descending select entry;
-
-            return sorted.Select(x => x.Key).ToArray();
         }
     }
 }
