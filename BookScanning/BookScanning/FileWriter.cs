@@ -14,31 +14,54 @@ namespace BookScanning
 
         public List<Library> sortedLibraries = null;
 
-        public void OrderLibraries(List<Library> libraries, bool areRatingsSame, int numberOfDaysTotal, int numberOfBooksTotal)
+        public void OrderLibraries(List<Library> libraries, bool areRatingsSame, int numberOfDaysTotal, int numberOfBooksTotal, string fileName)
         {
-            if (numberOfDaysTotal == numberOfBooksTotal)
+            if (fileName == "d_tough_choices.txt")
+            {
+                sortedLibraries = libraries.OrderByDescending(x => x.Efficiency).ToList();
+                return;
+            }
+            //if (fileName == "e_so_many_books.txt" || fileName == "f_libraries_of_the_world.txt")
+            //{
+            //    sortedLibraries = libraries.OrderByDescending(x => x.BooksCanSendPerDay).ToList();
+            //    return;
+            //}
+            else
             {
                 sortedLibraries = libraries.OrderBy(x => x.DaysToSignoff).ToList();
                 return;
             }
 
-            if (numberOfBooksTotal == 100000 && numberOfDaysTotal < 1000)
-            {
-                sortedLibraries = libraries.OrderBy(x => x.BooksCanSendPerDay).ToList();
-                return;
-            }
+            //if (numberOfDaysTotal == numberOfBooksTotal)
+            //{
+            //    sortedLibraries = libraries.OrderBy(x => x.DaysToSignoff).ToList(); // worked good for all except D
+            //    return;
+            //}
+            //if (!areRatingsSame)
+            //{
+            //    sortedLibraries = libraries.OrderBy(x => x.Efficiency).ToList(); // worked good for B and C
+            //    return;
+            //}
 
-            if (!areRatingsSame)
-            {
-                sortedLibraries = libraries.OrderBy(x => x.Efficiency).ToList();
-                return;
-            }
-
-            if (areRatingsSame)
-            {
-                sortedLibraries = libraries.OrderByDescending(x => x.Efficiency).ToList();
-                return;
-            }
+            //if (areRatingsSame) // worked good for D; D has same ratings for all books
+            //{
+            //    sortedLibraries = libraries.OrderByDescending(x => x.Efficiency).ToList();
+            //    return;
+            //}
+            //if (numberOfDaysTotal == numberOfBooksTotal)
+            //{
+            //    sortedLibraries = libraries.OrderBy(x => x.DaysToSignoff).ToList();
+            //    return;
+            //}
+            //if (numberOfBooksTotal == 100000 && numberOfDaysTotal <= 1000)
+            //{
+            //    sortedLibraries = libraries.OrderBy(x => x.BooksCanSendPerDay).ToList();
+            //    return;
+            //}
+            //else
+            //{
+            //    sortedLibraries = libraries.OrderBy(x => x.DaysToSignoff).ToList();
+            //}
         }
 
         public void SignoffAndShipBooks(List<Library> libraries, Dictionary<int, int> BookToRatingGlobal, int numberOfDaysTotal, string fileName, bool areRatingsSame, int numberOfBooksTotal)
@@ -48,7 +71,7 @@ namespace BookScanning
                 File.Delete(path + fileName);
             }
 
-            OrderLibraries(libraries, areRatingsSame, numberOfDaysTotal, numberOfBooksTotal);
+            OrderLibraries(libraries, areRatingsSame, numberOfDaysTotal, numberOfBooksTotal, fileName);
 
             var libraryAndBooksString = new StringBuilder();
 
@@ -174,7 +197,6 @@ namespace BookScanning
 
                 ++librariesProcessed;
             }
-
 
             CreateEntry(librariesProcessed.ToString(), fileName);
         }

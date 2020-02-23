@@ -83,8 +83,8 @@ namespace BookScanning
                         BooksInLibrary = booksInLibrary,
                         DaysToSignoff = daysToSignoff,
                         BooksCanSendPerDay = booksCanSendPerDay,
-                        Efficiency = CalculateLibraryEfficiency(daysToSignoff, booksCanSendPerDay, booksInLibrary),
-                        Books = books.ToArray()
+                        Books = books.ToArray(),
+                        Efficiency = CalculateLibraryEfficiency(daysToSignoff, booksCanSendPerDay, books.Count)
                     };
 
                     Libraries.Add(library);
@@ -145,9 +145,14 @@ namespace BookScanning
         {
             foreach (var library in Libraries)
             {
-                library.booksSortedByRatingDictionary = new Dictionary<int, int>(library.BooksInLibrary);
+                if (library.Books == null || library.Books.Length == 0)
+                {
+                    break;
+                }
 
-                for (int i = 0; i < library.BooksInLibrary; i++)
+                library.booksSortedByRatingDictionary = new Dictionary<int, int>();
+
+                for (int i = 0; i < library.Books.Length; i++)
                 {
                     var bookId = library.Books[i];
                     BookToRatingGlobal.TryGetValue(bookId, out int rating);
