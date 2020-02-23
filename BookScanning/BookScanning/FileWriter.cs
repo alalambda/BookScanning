@@ -16,60 +16,44 @@ namespace BookScanning
 
         public void OrderLibraries(List<Library> libraries, bool areRatingsSame, int numberOfDaysTotal)
         {
-            sortedLibraries = libraries.OrderByDescending(x => x.Efficiency).ToList();
+            sortedLibraries = libraries.OrderBy(x => x.Efficiency).ToList();
 
-            var libraryRatings = new int[sortedLibraries.Count];
+            //var libraryRatings = new int[sortedLibraries.Count];
 
-            if (!areRatingsSame)
-            {
-                for (int i = 0; i < sortedLibraries.Count; i++)
-                {
-                    var library = libraries[i];
-                    if (library.booksSortedByRatingDictionary != null)
-                    {
-                        var libraryRating = 0;
-                        if (library.BooksInLibrary < library.BooksCanSendPerDay)
-                        {
-                            var booksLibraryCanShip = library.BooksInLibrary;
-                            libraryRating = library.booksSortedByRatingDictionary.Sum(x => x.Value);
-                        }
-                        else
-                        {
-                            var booksLibraryCanShip = (numberOfDaysTotal - library.DaysToSignoff) / library.BooksCanSendPerDay;
+            //if (!areRatingsSame)
+            //{
+            //    for (int i = 0; i < sortedLibraries.Count; i++)
+            //    {
+            //        var library = libraries[i];
+            //        if (library.booksSortedByRatingDictionary != null)
+            //        {
+            //            var libraryRating = 0;
+            //            if (library.BooksInLibrary < library.BooksCanSendPerDay)
+            //            {
+            //                var booksLibraryCanShip = library.BooksInLibrary;
+            //                libraryRating = library.booksSortedByRatingDictionary.Sum(x => x.Value);
+            //            }
+            //            else
+            //            {
+            //                var booksLibraryCanShip = (numberOfDaysTotal - library.DaysToSignoff) / library.BooksCanSendPerDay;
 
-                            foreach (var rating in library.booksSortedByRatingDictionary.Values)
-                            {
-                                if (booksLibraryCanShip == 0)
-                                {
-                                    break;
-                                }
+            //                foreach (var rating in library.booksSortedByRatingDictionary.Values)
+            //                {
+            //                    if (booksLibraryCanShip == 0)
+            //                    {
+            //                        break;
+            //                    }
 
-                                libraryRating += rating;
-                                --booksLibraryCanShip;
-                            }
-                        }
-                        libraryRatings[i] = libraryRating;
-                    }
-                }
+            //                    libraryRating += rating;
+            //                    --booksLibraryCanShip;
+            //                }
+            //            }
+            //            libraryRatings[i] = libraryRating;
+            //        }
+            //    }
 
-                for (var i = 0; i < libraryRatings.Length - 1; i++)
-                {
-                    for (var k = 1; k < libraryRatings.Length; k++)
-                    {
-                        if (libraryRatings[i] < libraryRatings[k])
-                        {
-                            var tempRating = libraryRatings[i];
-                            var tempLibrary = sortedLibraries[i];
-
-                            libraryRatings[i] = libraryRatings[k];
-                            sortedLibraries[i] = sortedLibraries[k];
-
-                            libraryRatings[k] = tempRating;
-                            sortedLibraries[k] = tempLibrary;
-                        }
-                    }
-                }
-            }
+            //    Array.Sort(libraryRatings, sortedLibraries.ToArray(), Comparer<int>.Create((x, y) => y.CompareTo(x)));
+            //}
         }
 
         public void SignoffAndShipBooks(List<Library> libraries, Dictionary<int, int> BookToRatingGlobal, int numberOfDaysTotal, string fileName, bool areRatingsSame)
@@ -173,12 +157,12 @@ namespace BookScanning
                     arrayOfBookIds = library.Books;
                 }
 
-                if (arrayOfBookIds.Length != booksProcessed)
+                if (arrayOfBookIds.Length > booksProcessed)
                 {
                     Array.Resize(ref arrayOfBookIds, booksProcessed);
                 }
 
-                libraryAndBooksString.Append(library.Id).Append(" ").Append(booksProcessed).AppendLine();
+                libraryAndBooksString.Append(library.Id).Append(" ").Append(arrayOfBookIds.Length).AppendLine();
                 libraryAndBooksString.Append(string.Join(" ", arrayOfBookIds)).AppendLine();
 
                 using (StreamWriter file = new StreamWriter(path + fileName, true))
