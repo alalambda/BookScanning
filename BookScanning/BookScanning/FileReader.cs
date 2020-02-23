@@ -108,7 +108,7 @@ namespace BookScanning
                 SortBooksByRatingPerLibrary();
             }
 
-            _FileWriter.SignoffAndShipBooks(Libraries, BookToRatingGlobal, numberOfDays, fileName, areRatingsSame);
+            _FileWriter.SignoffAndShipBooks(Libraries, BookToRatingGlobal, numberOfDays, fileName, areRatingsSame, numberOfDays);
         }
 
         public Dictionary<int, int> MapBooksToRatings(int[] distinctBookIds, int[] ratingsArray)
