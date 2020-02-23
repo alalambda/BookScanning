@@ -41,14 +41,14 @@ namespace BookScanning
             }
         }
 
-        public void SignoffAndShipBooks(List<Library> libraries, Dictionary<int, int> BookToRatingGlobal, int numberOfDaysTotal, string fileName, bool areRatingsSame, int daysTotal)
+        public void SignoffAndShipBooks(List<Library> libraries, Dictionary<int, int> BookToRatingGlobal, int numberOfDaysTotal, string fileName, bool areRatingsSame, int numberOfBooksTotal)
         {
             if (File.Exists(path + fileName))
             {
                 File.Delete(path + fileName);
             }
 
-            OrderLibraries(libraries, areRatingsSame, numberOfDaysTotal, daysTotal);
+            OrderLibraries(libraries, areRatingsSame, numberOfDaysTotal, numberOfBooksTotal);
 
             var libraryAndBooksString = new StringBuilder();
 
