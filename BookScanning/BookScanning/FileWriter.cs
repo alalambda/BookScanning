@@ -14,6 +14,8 @@ namespace BookScanning
 
         public List<Library> SortedLibraries = null;
 
+        public List<Library> OutsiderLibraries = null;
+
         public void OrderLibraries(List<Library> libraries, string fileName)
         {
             if (fileName == "c_incunabula.txt")
@@ -26,37 +28,69 @@ namespace BookScanning
                 SortedLibraries = libraries.OrderByDescending(x => x.Efficiency).ToList();
                 return;
             }
-            if (fileName == "e_so_many_books.txt" || fileName == "f_libraries_of_the_world.txt")
+            //if (fileName == "e_so_many_books.txt")
+            //{
+            //    SortedLibraries = libraries.OrderBy(x => Convert.ToDouble(x.DaysToSignoff) / Convert.ToDouble(x.BooksCanSendPerDay))
+            //        .Where(x => Convert.ToDouble(x.BooksCanSendPerDay) / Convert.ToDouble(x.BooksInLibrary) * 100 <= 1.0).ToList();
+
+            //    //stats
+            //    Console.WriteLine("Id;BooksInLibrary;DaysToSignoff;BooksCanSendPerDay");
+            //    SortedLibraries.ForEach(x => Console.WriteLine($"{x.Id};{x.BooksInLibrary};{x.DaysToSignoff};{x.BooksCanSendPerDay}"));
+            //    return;
+            //}
+            //if (fileName == "f_libraries_of_the_world.txt")
+            //{
+            //    SortedLibraries = libraries.OrderBy(x => Convert.ToDouble(x.DaysToSignoff) / Convert.ToDouble(x.BooksCanSendPerDay))
+            //        .Where(x => Convert.ToDouble(x.BooksCanSendPerDay) / Convert.ToDouble(x.BooksInLibrary) * 100 <= 1.0).ToList();
+
+            //    //stats
+            //    Console.WriteLine("Id;BooksInLibrary;DaysToSignoff;BooksCanSendPerDay");
+            //    SortedLibraries.ForEach(x => Console.WriteLine($"{x.Id};{x.BooksInLibrary};{x.DaysToSignoff};{x.BooksCanSendPerDay}"));
+            //    return;
+            //}
+            else
             {
                 SortedLibraries = libraries.OrderBy(x => Convert.ToDouble(x.DaysToSignoff) / Convert.ToDouble(x.BooksCanSendPerDay))
                     .Where(x => Convert.ToDouble(x.BooksCanSendPerDay) / Convert.ToDouble(x.BooksInLibrary) * 100 <= 1.0).ToList();
 
-                //Console.WriteLine("Id;BooksInLibrary;DaysToSignoff;BooksCanSendPerDay");
-                //SortedLibraries.ForEach(x => Console.WriteLine($"{x.Id};{x.BooksInLibrary};{x.DaysToSignoff};{x.BooksCanSendPerDay}"));
-                return;
-            }
-            else
-            {
-                SortedLibraries = libraries.OrderBy(x => Convert.ToDouble(x.DaysToSignoff) / Convert.ToDouble(x.BooksCanSendPerDay)).ToList();
+                OutsiderLibraries = libraries.Where(x => Convert.ToDouble(x.BooksCanSendPerDay) / Convert.ToDouble(x.BooksInLibrary) * 100 > 1.0)
+                    .OrderBy(x => Convert.ToDouble(x.DaysToSignoff) / Convert.ToDouble(x.BooksCanSendPerDay)).ToList();
+
+                //SortedLibraries = libraries.OrderBy(x => Convert.ToDouble(x.DaysToSignoff) / Convert.ToDouble(x.BooksCanSendPerDay)).ToList();
                 return;
             }
         }
 
-        public void SignoffAndShipBooks(List<Library> libraries, Dictionary<int, int> BookToRatingGlobal, int numberOfDaysTotal, int numberOfBooksTotal, string fileName)
+        public void SignoffAndShipBooks(List<Library> libraries, Dictionary<int, int> bookToRatingGlobal, int numberOfDaysTotal, int numberOfBooksTotal, string fileName)
         {
             if (File.Exists(path + fileName))
             {
                 File.Delete(path + fileName);
             }
 
+            var ratings = bookToRatingGlobal;
+
             OrderLibraries(libraries, fileName);
 
+            var librariesProcessed = ProcessLibraries(SortedLibraries, ratings, numberOfDaysTotal, fileName);
+
+            if (OutsiderLibraries != null && OutsiderLibraries.Count > 0)
+            {
+                librariesProcessed += ProcessLibraries(OutsiderLibraries, ratings, numberOfDaysTotal, fileName);
+            }
+
+            CreateEntry(librariesProcessed.ToString(), fileName);
+        }
+
+        public int ProcessLibraries(List<Library> librariesToProcess, Dictionary<int, int> bookToRatingGlobal, int numberOfDaysTotal, string fileName)
+        {
             var libraryAndBooksString = new StringBuilder();
 
             var librariesProcessed = 0;
-            foreach (var library in SortedLibraries)
+
+            foreach (var library in librariesToProcess)
             {
-                if (BookToRatingGlobal.Count < 1)
+                if (bookToRatingGlobal.Count < 1)
                 {
                     break;
                 }
@@ -77,9 +111,9 @@ namespace BookScanning
                             break;
                         }
 
-                        if (BookToRatingGlobal.ContainsKey(bookId))
+                        if (bookToRatingGlobal.ContainsKey(bookId))
                         {
-                            BookToRatingGlobal.Remove(bookId);
+                            bookToRatingGlobal.Remove(bookId);
 
                             if (library.BooksCanSendPerDay >= library.BooksInLibrary)
                             {
@@ -114,9 +148,9 @@ namespace BookScanning
                             break;
                         }
 
-                        if (BookToRatingGlobal.ContainsKey(bookId))
+                        if (bookToRatingGlobal.ContainsKey(bookId))
                         {
-                            BookToRatingGlobal.Remove(bookId);
+                            bookToRatingGlobal.Remove(bookId);
 
                             if (library.BooksCanSendPerDay >= library.BooksInLibrary)
                             {
@@ -176,7 +210,7 @@ namespace BookScanning
                 ++librariesProcessed;
             }
 
-            CreateEntry(librariesProcessed.ToString(), fileName);
+            return librariesProcessed;
         }
 
         public void CreateEntry(string lineToAdd, string fileName)
