@@ -28,35 +28,13 @@ namespace BookScanning
                 SortedLibraries = libraries.OrderByDescending(x => x.Efficiency).ToList();
                 return;
             }
-            //if (fileName == "e_so_many_books.txt")
-            //{
-            //    SortedLibraries = libraries.OrderBy(x => Convert.ToDouble(x.DaysToSignoff) / Convert.ToDouble(x.BooksCanSendPerDay))
-            //        .Where(x => Convert.ToDouble(x.BooksCanSendPerDay) / Convert.ToDouble(x.BooksInLibrary) * 100 <= 1.0).ToList();
-
-            //    //stats
-            //    Console.WriteLine("Id;BooksInLibrary;DaysToSignoff;BooksCanSendPerDay");
-            //    SortedLibraries.ForEach(x => Console.WriteLine($"{x.Id};{x.BooksInLibrary};{x.DaysToSignoff};{x.BooksCanSendPerDay}"));
-            //    return;
-            //}
-            //if (fileName == "f_libraries_of_the_world.txt")
-            //{
-            //    SortedLibraries = libraries.OrderBy(x => Convert.ToDouble(x.DaysToSignoff) / Convert.ToDouble(x.BooksCanSendPerDay))
-            //        .Where(x => Convert.ToDouble(x.BooksCanSendPerDay) / Convert.ToDouble(x.BooksInLibrary) * 100 <= 1.0).ToList();
-
-            //    //stats
-            //    Console.WriteLine("Id;BooksInLibrary;DaysToSignoff;BooksCanSendPerDay");
-            //    SortedLibraries.ForEach(x => Console.WriteLine($"{x.Id};{x.BooksInLibrary};{x.DaysToSignoff};{x.BooksCanSendPerDay}"));
-            //    return;
-            //}
             else
             {
+
                 SortedLibraries = libraries.OrderBy(x => Convert.ToDouble(x.DaysToSignoff) / Convert.ToDouble(x.BooksCanSendPerDay))
+                    .ThenByDescending(x => x.BooksInLibrary)
                     .Where(x => Convert.ToDouble(x.BooksCanSendPerDay) / Convert.ToDouble(x.BooksInLibrary) * 100 <= 1.0).ToList();
 
-                OutsiderLibraries = libraries.Where(x => Convert.ToDouble(x.BooksCanSendPerDay) / Convert.ToDouble(x.BooksInLibrary) * 100 > 1.0)
-                    .OrderBy(x => Convert.ToDouble(x.DaysToSignoff) / Convert.ToDouble(x.BooksCanSendPerDay)).ToList();
-
-                //SortedLibraries = libraries.OrderBy(x => Convert.ToDouble(x.DaysToSignoff) / Convert.ToDouble(x.BooksCanSendPerDay)).ToList();
                 return;
             }
         }
