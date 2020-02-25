@@ -14,9 +14,9 @@ namespace BookScanning
         public List<Library> Libraries = null;
         public Dictionary<int, int> BookToRatingGlobal = null;
 
-        public int numberOfBooks = 0;
-        public int numberOfLibraries = 0;
-        public int numberOfDays = 0;
+        public int NumberOfBooks = 0;
+        public int NumberOfLibraries = 0;
+        public int NumberOfDays = 0;
 
         public void Process(string fileName)
         {
@@ -24,8 +24,8 @@ namespace BookScanning
 
             var allBookIds = new List<int>();
 
-            Libraries = new List<Library>(numberOfLibraries);
-            int[] ratingsArray = new int[numberOfBooks];
+            Libraries = new List<Library>(NumberOfLibraries);
+            int[] ratingsArray = new int[NumberOfBooks];
 
             var lines = File.ReadAllLines(path + fileName);
 
@@ -108,7 +108,7 @@ namespace BookScanning
                 SortBooksByRatingPerLibrary();
             }
 
-            _FileWriter.SignoffAndShipBooks(Libraries, BookToRatingGlobal, numberOfDays, fileName, areRatingsSame, numberOfBooks);
+            _FileWriter.SignoffAndShipBooks(Libraries, BookToRatingGlobal, NumberOfDays, NumberOfBooks, fileName);
         }
 
         public Dictionary<int, int> MapBooksToRatings(int[] distinctBookIds, int[] ratingsArray)
@@ -131,9 +131,9 @@ namespace BookScanning
 
             string[] values = firstLine.Split(" ");
 
-            numberOfBooks = int.Parse(values[0]);
-            numberOfLibraries = int.Parse(values[1]);
-            numberOfDays = int.Parse(values[2]);
+            NumberOfBooks = int.Parse(values[0]);
+            NumberOfLibraries = int.Parse(values[1]);
+            NumberOfDays = int.Parse(values[2]);
         }
 
         public double CalculateLibraryEfficiency(int signoffDays, int booksPerDay, int booksInLibrary)

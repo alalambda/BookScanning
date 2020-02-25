@@ -12,40 +12,49 @@ namespace BookScanning
 
         private static readonly char[] TrimNewLineChars = Environment.NewLine.ToCharArray();
 
-        public List<Library> sortedLibraries = null;
+        public List<Library> SortedLibraries = null;
 
-        public void OrderLibraries(List<Library> libraries, bool areRatingsSame, string fileName)
+        public void OrderLibraries(List<Library> libraries, string fileName)
         {
             if (fileName == "c_incunabula.txt")
             {
-                sortedLibraries = libraries.OrderBy(x => x.DaysToSignoff).ToList();
+                SortedLibraries = libraries.OrderBy(x => x.DaysToSignoff).ToList();
                 return;
             }
             if (fileName == "d_tough_choices.txt")
             {
-                sortedLibraries = libraries.OrderByDescending(x => x.Efficiency).ToList();
+                SortedLibraries = libraries.OrderByDescending(x => x.Efficiency).ToList();
+                return;
+            }
+            if (fileName == "e_so_many_books.txt" || fileName == "f_libraries_of_the_world.txt")
+            {
+                SortedLibraries = libraries.OrderBy(x => Convert.ToDouble(x.DaysToSignoff) / Convert.ToDouble(x.BooksCanSendPerDay))
+                    .Where(x => Convert.ToDouble(x.BooksCanSendPerDay) / Convert.ToDouble(x.BooksInLibrary) * 100 <= 1.0).ToList();
+
+                //Console.WriteLine("Id;BooksInLibrary;DaysToSignoff;BooksCanSendPerDay");
+                //SortedLibraries.ForEach(x => Console.WriteLine($"{x.Id};{x.BooksInLibrary};{x.DaysToSignoff};{x.BooksCanSendPerDay}"));
                 return;
             }
             else
             {
-                sortedLibraries = libraries.OrderBy(x => Convert.ToDouble(x.DaysToSignoff) / Convert.ToDouble(x.BooksCanSendPerDay)).ToList();
+                SortedLibraries = libraries.OrderBy(x => Convert.ToDouble(x.DaysToSignoff) / Convert.ToDouble(x.BooksCanSendPerDay)).ToList();
                 return;
             }
         }
 
-        public void SignoffAndShipBooks(List<Library> libraries, Dictionary<int, int> BookToRatingGlobal, int numberOfDaysTotal, string fileName, bool areRatingsSame, int numberOfBooksTotal)
+        public void SignoffAndShipBooks(List<Library> libraries, Dictionary<int, int> BookToRatingGlobal, int numberOfDaysTotal, int numberOfBooksTotal, string fileName)
         {
             if (File.Exists(path + fileName))
             {
                 File.Delete(path + fileName);
             }
 
-            OrderLibraries(libraries, areRatingsSame, fileName);
+            OrderLibraries(libraries, fileName);
 
             var libraryAndBooksString = new StringBuilder();
 
             var librariesProcessed = 0;
-            foreach (var library in sortedLibraries)
+            foreach (var library in SortedLibraries)
             {
                 if (BookToRatingGlobal.Count < 1)
                 {
@@ -172,9 +181,9 @@ namespace BookScanning
 
         public void CreateEntry(string lineToAdd, string fileName)
         {
-            var txtLines = File.ReadAllLines(path + fileName).ToList();   //Fill a list with the lines from the txt file.
-            txtLines.Insert(0, lineToAdd);                                //Insert the line you want to add last under the tag 'item1'.
-            File.WriteAllLines(path + fileName, txtLines);                //Add the lines including the new one.
+            var txtLines = File.ReadAllLines(path + fileName).ToList();
+            txtLines.Insert(0, lineToAdd);
+            File.WriteAllLines(path + fileName, txtLines);
         }
     }
 }
